@@ -8,12 +8,16 @@ public class Encoder {
     public static final int PACKET_SIZE  = 500;
     private static SolitonGenerator solitonGenerator;
     List<byte[]> packets = new ArrayList<byte[]>();
-    public Encoder(String path) throws Exception{
-        File file = new File(path);
+    ArrayList<Integer> shuffler;
+    PrintWriter pw; // for logs
+
+
+    public Encoder(String in, String logPath) throws Exception{
+        File file = new File(in);
         FileInputStream fileStream = new FileInputStream(file);
         fileStream.read();
         int fileSize = (int)file.length();
-
+        pw = new PrintWriter(logPath);
         int readLength = PACKET_SIZE;
         byte[] read;
         while(fileSize > 0){
@@ -33,21 +37,45 @@ public class Encoder {
         // according to histogram2.txt i think 0.5 is pretty dece
         // 10% 1s and rest generally in range 2-5
         // if we go too high then we get nothing but 2s, really.
+
+        shuffler  = new ArrayList<Integer>(packets.size());
+        for(int i = 0; i< packets.size(); i++){
+            shuffler.add(i);
+        }
+
+    }
+    // generate tn using LT code
+    // generates 1 packet.
+    public Packet genLTCode(){
+        int k = packets.size();
+        int d = solitonGenerator.generate();
+        //System.out.println("SolitonGeneration: " + d);
+        Collections.shuffle(shuffler);
+        byte[] t = new byte[PACKET_SIZE];
+        HashSet<Integer> ind = new HashSet<Integer>();
+        for(int i = 0; i< d; i++){
+            int r = shuffler.get(i);
+            ind.add(r);
+            byte[] s = packets.get(r);
+            int j = 0;
+            for(byte b : t){
+                t[j] = (byte)(b^s[j++]);
+            }
+        }
+        return new Packet(k, d, ind, t);
     }
 
+    // does the whole shebang, for testing purposes really.
     public LinkedList<Packet> encode() throws Exception{
         int k = packets.size();
         int n = 0;
         LinkedList<Packet> encoded = new LinkedList<Packet>();
-        ArrayList<Integer> shuffler = new ArrayList<Integer>(k);
-        for(int i = 0; i< k; i++){
-            shuffler.add(i);
-        }
-        PrintWriter pw = new PrintWriter("resources/encoded.txt");
+
+
         int[] check = new int[k];
         while(n < 4*k){ // how many do we have to receive?
             //System.out.println("Packet #: " + n);
-            Packet p = LTCodes(shuffler);
+            Packet p = genLTCode();
             for(Integer i : p.ind){
                 check[i]++;
             }
@@ -76,32 +104,8 @@ public class Encoder {
         //System.out.println(rep + " repeated!");
         //System.out.println(repeats + " total repeats!");
 
-        for(Packet p : encoded){
-            if(p.d != p.ind.size()){
-                System.out.println(" ENCODER FAULT: " + p.d + ", " + p.ind.size());
-            }
-        }
         return encoded;
     }
 
-    // generate tn
-    // generates 1 packet.
-    public Packet LTCodes(ArrayList<Integer> shuffler){
-        int k = packets.size();
-        int d = solitonGenerator.generate();
-        //System.out.println("SolitonGeneration: " + d);
-        Collections.shuffle(shuffler);
-        byte[] t = new byte[PACKET_SIZE];
-        HashSet<Integer> ind = new HashSet<Integer>();
-        for(int i = 0; i< d; i++){
-            int r = shuffler.get(i);
-            ind.add(r);
-            byte[] s = packets.get(r);
-            int j = 0;
-            for(byte b : t){
-                t[j] = (byte)(b^s[j++]);
-            }
-        }
-        return new Packet(k, d, ind, t);
-    }
+
 }

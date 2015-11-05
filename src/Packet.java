@@ -1,3 +1,5 @@
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,6 +32,54 @@ public class Packet {
             ret[j] = (byte)(b^two[j++]);
         }
         return ret;
+    }
+
+
+
+
+    // for datagrampacket
+    public byte[] toByteArray(){
+        byte[] ret = new byte[data.length+4*ind.size()+8];
+        byte[] na = intToByteArray(n);
+        byte[] da = intToByteArray(d);
+        for(int i = 0; i< 4; i++){
+            ret[i] = na[i];
+            ret[i+4] = da[i];
+        }
+        int count = 0;
+        // 4*ind.size space + 8
+        for(Integer ii : ind){
+            byte[] ia = intToByteArray(ii);
+            for(int i = 0; i < 4; i++){
+                ret[count*4 + 8 + i] = ia[i];
+            }
+            count++;
+        }
+        for(int i = 0; i< data.length; i++){
+            ret[4*ind.size()+8+i] = data[i];
+        }
+        return ret;
+    }
+    public void fromByteArray(byte[] ba){
+        this.n = byteArrayToInt(Arrays.copyOfRange(ba, 0, 4)); // n
+        this.d = byteArrayToInt(Arrays.copyOfRange(ba, 4, 8)); // d
+        for(int i = 0; i< this.d; i++){
+            this.ind.add(byteArrayToInt(Arrays.copyOfRange(ba, i*4+8,i*4+12)));
+        }
+        this.data = Arrays.copyOfRange(ba, 4*ind.size()+8, ba.length);
+    }
+
+    // byte array of size 4, probably mostly zeroes.
+    public byte[] intToByteArray(int i){
+        return new byte[] {
+                (byte)((i>>24) & 0xFF),
+                (byte)((i>>16) & 0xFF),
+                (byte)((i>>8) & 0xFF),
+                (byte)((i) & 0xFF),
+        };
+    }
+    public int byteArrayToInt(byte[] b){
+        return (b[3] & 0xFF) | (b[2] & 0xFF) << 8 | (b[1] & 0xFF) << 16 | (b[0] & 0xFF) << 24;
     }
 
 
