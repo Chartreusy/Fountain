@@ -13,7 +13,7 @@ public class Tester {
         //xorTest();
     }
     public static void decoder() throws Exception{
-        Encoder encoder = new Encoder("resources/TestData.txt");
+        Encoder encoder = new Encoder("resources/TestData.txt", "resources/encoded.txt");
         Decoder decoder = new Decoder("resources/decoded.txt");
         decoder.decode(encoder.encode());
 
@@ -77,7 +77,7 @@ public class Tester {
 
     }
     public static void encoder() throws Exception{
-        Encoder encoder = new Encoder("resources/TestData.txt");
+        Encoder encoder = new Encoder("resources/TestData.txt", "resources/encoded.txt");
         encoder.encode();
     }
 }

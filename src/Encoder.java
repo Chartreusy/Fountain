@@ -5,16 +5,18 @@ import java.util.*;
  * Created on 04/11/15.
  */
 public class Encoder {
-    public static final int PACKET_SIZE  = 500;
+    public static final int PACKET_SIZE  = 50;
     private static SolitonGenerator solitonGenerator;
     List<byte[]> packets = new ArrayList<byte[]>();
     ArrayList<Integer> shuffler;
     PrintWriter pw; // for logs
+    int count = 0;
 
 
     public Encoder(String in, String logPath) throws Exception{
         File file = new File(in);
         FileInputStream fileStream = new FileInputStream(file);
+        count = 0;
         fileStream.read();
         int fileSize = (int)file.length();
         pw = new PrintWriter(logPath);
@@ -47,6 +49,7 @@ public class Encoder {
     // generate tn using LT code
     // generates 1 packet.
     public Packet genLTCode(){
+        count++;
         int k = packets.size();
         int d = solitonGenerator.generate();
         //System.out.println("SolitonGeneration: " + d);

@@ -13,6 +13,13 @@ public class Packet {
     HashSet<Integer> ind;
     byte[] data;
 
+    public Packet(){
+        this.ind = new HashSet<Integer>();
+    }
+    public Packet(byte[] b){
+        this();
+        this.fromByteArray(b);
+    }
     public Packet(int n, int d, HashSet<Integer> ind, byte[] data) {
         this.n = n;
         this.d = d;

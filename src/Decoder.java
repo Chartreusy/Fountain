@@ -17,6 +17,7 @@ public class Decoder {
     public Decoder(String out) throws Exception{
         this.out = out;
         this.received = 0;
+        this.packetStream = new LinkedList<Packet>();
     }
 
     public boolean complete(){
@@ -32,6 +33,19 @@ public class Decoder {
             LTDecode(packetStream.pop());
         }
     }
+    public void dump() throws Exception{
+        File file = new File(out);
+        PrintWriter pw = new PrintWriter(file);
+        for(int i = 0; i< totPackets; i++){
+            if(msgQ.containsKey(i)){
+                pw.print(new String(msgQ.get(i).data));
+            } else {
+                System.out.println(i + " is missing!");
+            }
+        }
+        pw.flush();
+        pw.close();
+    }
     public void LTDecode(Packet p){
         if(totPackets == -1){
             totPackets = p.n;
@@ -40,7 +54,7 @@ public class Decoder {
 
         if(p.d == 1){
             int index = p.ind.iterator().next();
-            System.out.println("Acquired: " + index);
+            //System.out.println("Acquired: " + index);
             msgQ.put(index, p);
             if(msgQ.containsKey(index)) return;
 
