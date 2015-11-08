@@ -8,6 +8,7 @@ import java.util.Iterator;
  * Created on 04/11/15.
  */
 public class Packet {
+    public static final int PACKET_SIZE  = 500;
     int n;
     int d;
     HashSet<Integer> ind;
